@@ -1,0 +1,7 @@
+services:
+  app-release:
+    build: .
+    image: literate:latest
+
+volumes:
+  build-bin-output:

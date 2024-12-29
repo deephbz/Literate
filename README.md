@@ -88,6 +88,27 @@ You can also find this program in `examples/hello.lit`.
 | [32 bit Linux](https://zyedidia.github.io/literate/binaries/literate-linux32.tar.gz) |
 | [Arm Linux](https://zyedidia.github.io/literate/binaries/literate-linux-arm.tar.gz) |
 
+### Docker
+
+Docker images are prepared so users could build Literate easily on their local machine by running:
+```sh
+cd Literate # go to the root directory of Literate
+git submodule update --init --recursive
+docker compose build
+```
+
+Then you can run the binary by mounting your source code into the docker container:
+```sh
+SOURCE_DIR=/path/to/your/source
+OUTPUT_DIR=/path/to/your/output/dir
+docker run --rm -it -v $SOURCE_DIR:/source docker.io/library/literate:latest $SOURCE_DIR/code.lit --out-dir $OUTPUT_DIR
+```
+
+You can also copy the built binary out by 
+```sh
+docker run --rm -it -v ./bin:/tmp/bin --entrypoint bash docker.io/library/literate:latest -c 'cp /app/bin/lit /tmp/bin'   
+```
+
 ### Building from Source
 
 #### Mac

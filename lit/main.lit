@@ -173,7 +173,7 @@ and run tangle and weave on it (unless `tangleOnly` or `weaveOnly` was specified
 if (files.length > 0) {
     foreach (filename; files) {
         if (!filename.exists()) {
-            writeln("File ", filename, " does not exist!");
+            writeln("{Run Literate}: File ", filename, " does not exist!");
             continue;
         }
         File f = File(filename);

@@ -41,7 +41,7 @@ void main(in string[] args) {
     // Run Literate
     foreach (filename; files) {
         if (!filename.exists()) {
-            writeln("File ", filename, " does not exist!");
+            writeln("void main: File ", filename, " does not exist!");
             continue;
         }
         File f = File(filename);

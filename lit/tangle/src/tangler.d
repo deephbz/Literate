@@ -47,7 +47,7 @@ void writeCode(Block[string] codeblocks, string blockName, File file, string fil
             if ((newBlockName in codeblocks) !is null) {
                 writeCode(codeblocks, newBlockName, file, filename, whitespace ~ newWS);
             } else {
-                error(lineObj.file, lineObj.lineNum, "{" ~ newBlockName ~ "} does not exist");
+                error(lineObj.file, lineObj.lineNum, "{tangler.d writeCode function}: {" ~ newBlockName ~ "} does not exist");
             }
         } else {
             file.writeln(whitespace ~ line);

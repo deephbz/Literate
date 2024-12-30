@@ -73,7 +73,7 @@ void getCodeblocks(Program p,
             auto index = b.name.length;
             string name = strip(b.name[0..index]);
             if ((name in codeblocks) is null) {
-                error(p.file, b.startLine, "Trying to add to {" ~ name ~ "} which does not exist");
+                error(p.file, b.startLine, "{getCodeblocks function}: Trying to add to {" ~ name ~ "} which does not exist");
             } else {
                 codeblocks[name].lines ~= b.lines;
             }
@@ -81,7 +81,7 @@ void getCodeblocks(Program p,
             auto index = b.name.length;
             string name = strip(b.name[0..index]);
             if ((name in codeblocks) is null) {
-                error(p.file, b.startLine, "Trying to redefine {" ~ name ~ "} which does not exist");
+                error(p.file, b.startLine, "{getCodeblocks function}: Trying to redefine {" ~ name ~ "} which does not exist");
             } else {
                 codeblocks[name].lines = b.lines;
             }

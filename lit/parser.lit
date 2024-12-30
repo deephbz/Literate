@@ -371,7 +371,7 @@ Chapter parseChapter(Chapter chapter, string src) {
         if (!exists(fullPath)){
             writeln("[include] File not found at: ", fullPath);
             writeln("[include] Current working directory: ", getcwd());
-            error(filename, 1, "File " ~ fullPath ~ " does not exist");
+            error(filename, 1, "{parseChapter function}: File " ~ fullPath ~ " does not exist");
             return "";
         }
         return readall(File(fullPath));

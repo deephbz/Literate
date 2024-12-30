@@ -197,29 +197,52 @@ Chapter parseChapter(Chapter chapter, string src) {
     bool inCodeblock = false;
     bool inSearchBlock = false;
     bool inReplaceBlock = false;
+    static string[] includedFiles;  // Track included files to prevent infinite recursion
 
-
-    string include(string file) {
-        string fullPath = buildPath(dirName(filename), file);
-        writeln("[include] Current file: ", filename);
+    string processInclude(string includeFile, string currentFile) {
+        string fullPath = buildPath(dirName(currentFile), includeFile);
+        writeln("[include] Current file: ", currentFile);
         writeln("[include] Include path: ", fullPath);
-        if (fullPath == filename) {
-            error(filename, 1, "Recursive include");
+        
+        // Check if file has already been included to prevent infinite recursion
+        if (includedFiles.canFind(fullPath)) {
+            error(currentFile, 1, "Circular include detected: " ~ fullPath);
             return "";
         }
+        
         if (!exists(fullPath)){
             writeln("[include] File not found at: ", fullPath);
             writeln("[include] Current working directory: ", getcwd());
-            error(filename, 1, "File " ~ fullPath ~ " does not exist");
+            error(currentFile, 1, "{parseChapter function}: File " ~ fullPath ~ " does not exist");
             return "";
         }
-        return readall(File(fullPath));
+
+        // Add file to included files list
+        includedFiles ~= fullPath;
+        
+        // Read the file content
+        string content = readall(File(fullPath));
+        
+        // Process any nested includes in the content
+        auto oldFilename = filename;
+        filename = fullPath;  // Temporarily change filename for proper path resolution
+        
+        // Process includes while preserving line structure for heredoc strings
+        content = replaceAll!(match => "\n" ~ processInclude(match[1], fullPath))(content, regex(`\n[ \t]*@include ([^\n]*)`));
+        
+        filename = oldFilename;  // Restore original filename
+        
+        // Remove file from included files list after processing
+        includedFiles = includedFiles[0..$-1];
+        
+        return content;
     }
 
-    // Handle the @include statements
-    src = replaceAll!(match => include(match[1]))(src, regex(`\n@include (.*)`));
-    string[] lines = src.split("\n");
+    // Handle the @include statements with recursive processing
+    // Process includes while preserving line structure for heredoc strings
+    src = replaceAll!(match => "\n" ~ processInclude(match[1], filename))(src, regex(`\n[ \t]*@include ([^\n]*)`));
 
+    string[] lines = src.split("\n");
     int lineNum = 0;
     foreach (line; lines) {
         lineNum++;

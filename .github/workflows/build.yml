@@ -1,0 +1,72 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          # Linux x86_64 (LDC)
+          - os: ubuntu-latest
+            platform_name: x86_64-linux
+            compiler: ldc-1.32.0
+
+          # macOS x86_64 (LDC)
+          - os: macos-latest
+            platform_name: x86_64-darwin
+            compiler: ldc-1.32.0
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Setup Dlang
+      uses: dlang-community/setup-dlang@v2
+      with:
+        compiler: ${{ matrix.compiler }}
+    
+    - name: Cache DUB dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.dub
+        key: ${{ runner.os }}-dub-${{ hashFiles('**/dub.json', '**/dub.sdl') }}
+        restore-keys: |
+          ${{ runner.os }}-dub-
+    
+    - name: Build Artifacts
+      run: make release
+    
+    - name: Package Binary
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        VERSION="${{ github.ref_name }}"
+        VERSION="${VERSION#v}"  # Remove 'v' prefix if present
+        BINARY_NAME="literate-${{ matrix.platform_name }}"
+        cd bin
+        tar czf "${BINARY_NAME}.tar.gz" lit
+        echo "ARTIFACT_PATH=bin/${BINARY_NAME}.tar.gz" >> $GITHUB_ENV
+    
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: literate-${{ matrix.platform_name }}
+        path: bin/lit
+    
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ${{ env.ARTIFACT_PATH }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

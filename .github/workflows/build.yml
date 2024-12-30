@@ -49,4 +49,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: literate-${{ matrix.platform_name }}
-        path: bin/literate
+        path: bin/lit

@@ -7,7 +7,7 @@ import std.string: split, endsWith, startsWith, chomp, replace, strip;
 import std.algorithm: canFind;
 import std.regex;
 import std.conv;
-import std.path: extension;
+import std.path: extension, dirName, buildPath;
 import std.file;
 
 // Classes
@@ -169,12 +169,15 @@ Program parseProgram(Program p, string src) {
                 minorNum = 0;
             }
             Chapter c = new Chapter();
-            c.file = matches["filepath"];
+            string includePath = buildPath(dirName(filename), matches["filepath"]);
+            writeln("[parseProgram] Current file: ", filename);
+            writeln("[parseProgram] Chapter path: ", includePath);
+            c.file = includePath;
             c.title = matches["chapterName"];
             c.majorNum = majorNum;
             c.minorNum = minorNum;
 
-            p.chapters ~= parseChapter(c, readall(File(matches["filepath"])));
+            p.chapters ~= parseChapter(c, readall(File(includePath)));
         }
     }
 
@@ -197,15 +200,20 @@ Chapter parseChapter(Chapter chapter, string src) {
 
 
     string include(string file) {
-        if (file == filename) {
+        string fullPath = buildPath(dirName(filename), file);
+        writeln("[include] Current file: ", filename);
+        writeln("[include] Include path: ", fullPath);
+        if (fullPath == filename) {
             error(filename, 1, "Recursive include");
             return "";
         }
-        if (!exists(file)){
-            error(filename, 1, "File " ~ file ~ " does not exist");
+        if (!exists(fullPath)){
+            writeln("[include] File not found at: ", fullPath);
+            writeln("[include] Current working directory: ", getcwd());
+            error(filename, 1, "File " ~ fullPath ~ " does not exist");
             return "";
         }
-        return readall(File(file));
+        return readall(File(fullPath));
     }
 
     // Handle the @include statements

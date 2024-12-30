@@ -1,0 +1,52 @@
+# D language specific
+.dub/
+*.o
+*.obj
+*.lst
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Build and output directories
+build/
+bin/
+obj/
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*~
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Documentation and temporary files
+docs/
+*.html
+*.pdf
+*.log
+*.tmp
+
+# Test files
+test/
+unittest/
+*_test.*
+
+# Dependencies that should be fetched during build
+dub.selections.json
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.o.d
+__test__*
+.dub
+dub.selections.json

@@ -1,0 +1,45 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup D
+      uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: dmd-2.109.0
+    
+    - name: Cache DUB dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.dub
+        key: ${{ runner.os }}-dub-${{ hashFiles('**/dub.json', '**/dub.sdl') }}
+        restore-keys: |
+          ${{ runner.os }}-dub-
+    
+    - name: Build
+      run: make release
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: lit-binary
+        path: bin/lit
+    
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: bin/lit
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

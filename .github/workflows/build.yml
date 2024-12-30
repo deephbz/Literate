@@ -1,0 +1,52 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          # Linux x86_64 (LDC)
+          - os: ubuntu-latest
+            platform_name: x86_64-linux
+            compiler: ldc-1.32.0
+
+          # macOS x86_64 (LDC)
+          - os: macos-latest
+            platform_name: x86_64-darwin
+            compiler: ldc-1.32.0
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Setup Dlang
+      uses: dlang-community/setup-dlang@v2
+      with:
+        compiler: ${{ matrix.compiler }}
+    
+    - name: Cache DUB dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.dub
+        key: ${{ runner.os }}-dub-${{ hashFiles('**/dub.json', '**/dub.sdl') }}
+        restore-keys: |
+          ${{ runner.os }}-dub-
+    
+    - name: Build Artifacts
+      run: make release
+    
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: literate-${{ matrix.platform_name }}
+        path: bin/lit

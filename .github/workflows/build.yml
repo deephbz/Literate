@@ -51,9 +51,11 @@ jobs:
         VERSION="${{ github.ref_name }}"
         VERSION="${VERSION#v}"  # Remove 'v' prefix if present
         BINARY_NAME="literate-${{ matrix.platform_name }}"
-        cd bin
+        mkdir -p release
+        cp bin/lit release/
+        cd release
         tar czf "${BINARY_NAME}.tar.gz" lit
-        echo "ARTIFACT_PATH=bin/${BINARY_NAME}.tar.gz" >> $GITHUB_ENV
+        echo "ARTIFACT_PATH=release/${BINARY_NAME}.tar.gz" >> $GITHUB_ENV
     
     - name: Upload Artifact
       uses: actions/upload-artifact@v4

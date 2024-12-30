@@ -143,7 +143,7 @@ f.writeln(html);
 
 f.writeln("<ul id=\"contents\">");
 foreach (c; p.chapters) {
-    f.writeln("<li>" ~ c.num() ~ ". <a href=\"" ~ stripExtension(baseName(c.file)) ~ ".html\">" ~ c.title ~ "</a></li>");
+    f.writeln("<li>" ~ c.num() ~ ". <a class=\"chapter-contents-todo\" href=\"" ~ stripExtension(baseName(c.file)) ~ ".html\">" ~ c.title ~ "</a></li>");
 }
 
 f.writeln("
@@ -422,7 +422,7 @@ is a root code block.
 @{Find the definition location}
 @{Make the title bold if necessary}
 
-output ~= "<span class=\"codeblock_name\">{" ~ name ~ 
+output ~= "<span class=\"codeblock_name codeblock-def\">{" ~ name ~ 
           " <a href=\"" ~ htmlFile ~ "#" ~ def ~ "\">" ~ defLocation ~ "</a>}" ~ extra ~ "</span>\n";
 ---
 
@@ -532,7 +532,7 @@ if (strip(strippedLine[2..$ - 1]) !in defLocations) {
     if (chapter == c.num()) {
         defLocation = def[index + 1..$];
     }
-    def = ", <a href=\"" ~ htmlFile ~ "#" ~ def ~ "\">" ~ defLocation ~ "</a>";
+    def = ", <a class=\"codeblock-ref ref-to-usage\" href=\"" ~ htmlFile ~ "#" ~ def ~ "\">" ~ defLocation ~ "</a>";
 }
 output ~= "<span class=\"nocode pln\">" ~ leadingWS(line) ~ "{" ~ strippedLine[2..$ - 1] ~ def ~ "}</span>\n";
 ---
@@ -546,6 +546,34 @@ have a few if statements to figure out the grammar -- where to put the `and`
 and whether to have plurals and whatnot.
 
 --- LinkLocations function
+enum ReferenceType {
+    AddedTo,
+    UsedIn,
+    RedefinedIn
+}
+
+string getReferenceText(ReferenceType refType) {
+    final switch (refType) {
+        case ReferenceType.AddedTo:
+            return "Added to in section";
+        case ReferenceType.UsedIn:
+            return "Used in section";
+        case ReferenceType.RedefinedIn:
+            return "Redefined in section";
+    }
+}
+
+string getReferenceClass(ReferenceType refType) {
+    final switch (refType) {
+        case ReferenceType.AddedTo:
+            return "codeblock-ref ref-to-append-definition";
+        case ReferenceType.UsedIn:
+            return "codeblock-ref ref-to-usage";
+        case ReferenceType.RedefinedIn:
+            return "codeblock-ref ref-to-override-definition";
+    }
+}
+
 T[] noDupes(T)(in T[] s) {
     import std.algorithm: canFind;
     T[] result;
@@ -555,7 +583,8 @@ T[] noDupes(T)(in T[] s) {
     return result;
 }
 
-string linkLocations(string text, string[][string] sectionLocations, Program p, Chapter c, Section s, parser.Block block) {
+
+string linkLocations(ReferenceType refType, string[][string] sectionLocations, Program p, Chapter c, Section s, parser.Block block) {
     if (block.name in sectionLocations) {
         string[] locations = dup(sectionLocations[block.name]).noDupes;
 
@@ -564,7 +593,7 @@ string linkLocations(string text, string[][string] sectionLocations, Program p, 
         }
 
         if (locations.length > 0) {
-            string seealso = "<p class=\"seealso\">" ~ text;
+            string seealso = "<p class=\"seealso\">" ~ getReferenceText(refType);
 
             if (locations.length > 1) {
                 seealso ~= "s ";
@@ -581,7 +610,7 @@ string linkLocations(string text, string[][string] sectionLocations, Program p, 
                 if (chapter == c.num()) {
                     locName = loc[index + 1..$];
                 }
-                loc = "<a href=\"" ~ htmlFile ~ "#" ~ loc ~ "\">" ~ locName ~ "</a>";
+                loc = "<a class=\"" ~ getReferenceClass(refType) ~ "\" href=\"" ~ htmlFile ~ "#" ~ loc ~ "\">" ~ locName ~ "</a>";
                 if (i == 0) {
                     seealso ~= loc;
                 } else if (i == locations.length - 1) {
@@ -606,7 +635,7 @@ have a few if statements to figure out the grammar -- where to put the `and`
 and whether to have plurals and whatnot.
 
 --- Write the 'added to' links
-output ~= linkLocations("Added to in section", addLocations, p, c, s, block) ~ "\n";
+output ~= linkLocations(ReferenceType.AddedTo, addLocations, p, c, s, block) ~ "\n";
 ---
 
 @s Also used in links
@@ -615,13 +644,13 @@ This is pretty much the same as the 'added to' links except we use the
 `useLocations` array.
 
 --- Write the 'used in' links
-output ~= linkLocations("Used in section", useLocations, p, c, s, block) ~ "\n";
+output ~= linkLocations(ReferenceType.UsedIn, useLocations, p, c, s, block) ~ "\n";
 ---
 
 @s Redefined in links
 
 --- Write the 'redefined in' links
-output ~= linkLocations("Redefined in section", redefLocations, p, c, s, block) ~ "\n";
+output ~= linkLocations(ReferenceType.RedefinedIn, redefLocations, p, c, s, block) ~ "\n";
 ---
 
 @include weaver_static/weaver_js.lit

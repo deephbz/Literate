@@ -104,3 +104,55 @@ p:not(.notp) {
     text-indent: 0;
   }
 }
+
+.codeblock-def {
+    color: #2c3e50;
+    font-weight: bold;
+    text-decoration: none;
+    border-bottom: 2px solid #3498db;
+    display: inline-block;  /* This ensures the border only spans the text */
+}
+
+.codeblock-def:hover {
+    color: #3498db;
+    border-bottom: 2px solid #2980b9;
+}
+
+.codeblock-ref {
+    color: #e74c3c;
+    text-decoration: none;
+    border-bottom: 1px dashed #c0392b;
+    display: inline-block;  /* This ensures the border only spans the text */
+}
+
+.codeblock-ref:hover {
+    color: #c0392b;
+    border-bottom: 1px solid #c0392b;
+}
+
+.ref-to-append-definition {
+    border-bottom-color: #27ae60;
+}
+
+.ref-to-append-definition:hover {
+    color: #27ae60;
+    border-bottom-color: #219a52;
+}
+
+.ref-to-usage {
+    border-bottom-color: #f39c12;
+}
+
+.ref-to-usage:hover {
+    color: #f39c12;
+    border-bottom-color: #d68910;
+}
+
+.ref-to-override-definition {
+    border-bottom-color: #8e44ad;
+}
+
+.ref-to-override-definition:hover {
+    color: #8e44ad;
+    border-bottom-color: #7d3c98;
+}

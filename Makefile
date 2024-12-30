@@ -19,12 +19,8 @@ test: lit
 
 lit/markdown/source:
 	@if [ ! -s lit/markdown/source ]; then \
-		if [ ! -s .git ]; then \
-			git clone https://github.com/zyedidia/dmarkdown lit/markdown; \
-		else \
-			git submodule init; \
-			git submodule update; \
-		fi \
+		echo "Missing lit/markdown/source"; \
+		exit 1; \
 	fi;
 
 clean:
